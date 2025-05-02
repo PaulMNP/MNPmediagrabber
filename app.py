@@ -320,6 +320,7 @@ def download_options():
     'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
     #'cookiesfrombrowser': ('chrome',),
     'yes_playlist': True,
+    'cookiefile': 'cookies.txt',
 }
 
 
