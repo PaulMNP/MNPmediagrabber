@@ -318,7 +318,7 @@ def download_options():
 
     ydl_opts = {
     'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
-    'cookiesfrombrowser': ('chrome',),
+    #'cookiesfrombrowser': ('chrome',),
     'yes_playlist': True,
 }
 
