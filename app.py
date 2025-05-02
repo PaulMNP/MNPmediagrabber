@@ -317,10 +317,11 @@ def download_options():
         platform = 'instagram'
 
     ydl_opts = {
-    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
-    #'cookiesfrombrowser': ('chrome',),
-    'yes_playlist': True,
+    'format': 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+    'merge_output_format': 'mp4',
     'cookiefile': 'cookies.txt',
+    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',
+    'yes_playlist': True
 }
 
 
