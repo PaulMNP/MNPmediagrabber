@@ -316,11 +316,22 @@ def download_options():
     elif 'instagram.com' in url:
         platform = 'instagram'
 
+#     ydl_opts = {
+#     'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
+#     #'cookiesfrombrowser': ('chrome',),
+#     'yes_playlist': True,
+#     'cookiefile': 'cookies.txt',
+# }
     ydl_opts = {
-    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
-    #'cookiesfrombrowser': ('chrome',),
-    'yes_playlist': True,
+    'format': 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+    'merge_output_format': 'mp4',
     'cookiefile': 'cookies.txt',
+    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',
+    'yes_playlist': True,
+    'http_headers': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+    }
 }
 
 
