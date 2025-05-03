@@ -317,11 +317,10 @@ def download_options():
         platform = 'instagram'
 
     ydl_opts = {
-    'format': 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-    'merge_output_format': 'mp4',
+    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',  # different file per video!
+    #'cookiesfrombrowser': ('chrome',),
+    'yes_playlist': True,
     'cookiefile': 'cookies.txt',
-    'outtmpl': f'{safe_title}_%(title)s.%(ext)s',
-    'yes_playlist': True
 }
 
 
@@ -362,18 +361,18 @@ def background_download(url, ydl_opts, file_id, fmt):
             progress[file_id] = "Merging video and audio..."
 
     try:
+        # 🔍 Debug check
+        if os.path.exists("cookies.txt"):
+            print("✅ cookies.txt FOUND on server")
+        else:
+            print("❌ cookies.txt MISSING on server")
+
         ydl_opts['progress_hooks'] = [progress_hook]
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         progress[file_id] = "Done! Starting download..."
-    except yt_dlp.utils.DownloadError as e:
-        error_message = str(e)
-        if "This video is private" in error_message:
-            progress[file_id] = "Error: Private video."
-        elif "Sign in to confirm your age" in error_message:
-            progress[file_id] = "Error: Age-restricted video."
-        else:
-            progress[file_id] = f"Error: {error_message}"
+    except Exception as e:
+        progress[file_id] = f"Error: {str(e)}"
 
 @app.route('/progress/<file_id>')
 def progress_status(file_id):
