@@ -305,55 +305,61 @@ def download_options():
     except Exception as e:
         return f"Failed to fetch video info: {str(e)}"
 
-    # Sanitize title (remove bad characters for filename)
-    safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip()
-    safe_title = safe_title.replace(' ', '_')  # replace spaces with underscores if you want
-
+    # Sanitize filename
+    safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).rstrip().replace(' ', '_')
     file_id = str(uuid.uuid4())
+
+    # Detect platform
     platform = 'youtube'
     if 'tiktok.com' in url:
         platform = 'tiktok'
     elif 'instagram.com' in url:
         platform = 'instagram'
 
-    ydl_opts = {
-    'format': format_code,
-    'merge_output_format': 'mp4',
-    'cookiefile': 'cookies.txt',
-    'outtmpl': f'{file_id}_{safe_title}.%(ext)s',
-    'yes_playlist': True,
-    'http_headers': {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-    }
-}
-
-
+    # -----------------------------
+    # 1. DEFINE format_code FIRST
+    # -----------------------------
 
     if fmt == 'video':
         if platform == 'youtube':
             if quality == 'best':
                 format_code = 'bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[ext=mp4]/best'
             else:
-                format_code = f'bv*[height<={quality}][vcodec^=avc1]+ba[acodec^=mp4a]/best[height<={quality}][ext=mp4]/best'
-            ydl_opts['format'] = format_code
-            ydl_opts['merge_output_format'] = 'mp4'
+                format_code = f"bv*[height<={quality}][vcodec^=avc1]+ba[acodec^=mp4a]/best[height<={quality}][ext=mp4]/best"
         else:
-            ydl_opts['format'] = 'best'
-            ydl_opts['merge_output_format'] = 'mp4'
+            # Instagram / TikTok don't need special format filters
+            format_code = "best"
 
-    elif fmt == 'audio':
-        ydl_opts['format'] = 'bestaudio/best'
-        ydl_opts['postprocessors'] = [{
+    else:  # audio
+        format_code = "bestaudio/best"
+
+    # -----------------------------
+    # 2. NOW BUILD ydl_opts SAFELY
+    # -----------------------------
+    ydl_opts = {
+        'format': format_code,
+        'merge_output_format': 'mp4' if fmt == 'video' else None,
+        'cookiefile': 'cookies.txt',
+        'outtmpl': f'{file_id}_{safe_title}.%(ext)s',
+        'yes_playlist': True,
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9'
+        }
+    }
+
+    # Audio postprocessing
+    if fmt == "audio":
+        ydl_opts["postprocessors"] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'm4a',
             'preferredquality': '192',
         }]
-    else:
-        return "Invalid format selected."
 
-    threading.Thread(target=background_download, args=(url, ydl_opts, safe_title, fmt)).start()
-    return render_template_string(HTML_PREPARE_DOWNLOAD, file_id=safe_title, fmt=fmt)
+    # Start background download
+    threading.Thread(target=background_download, args=(url, ydl_opts, file_id, fmt)).start()
+
+    return render_template_string(HTML_PREPARE_DOWNLOAD, file_id=file_id, fmt=fmt)
 
 
 
